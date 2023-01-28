@@ -1,8 +1,7 @@
-from pprint import pprint
-
+import json
 import requests
 from token_yandex import TOKEN
-exited_files = []
+existed_files = []
 
 
 class YaUploader:
@@ -38,17 +37,34 @@ class YaUploader:
         list_of_files = response.json()
         items = list_of_files['items']
         for item in items:
-            exited_files.append(item['name'])
+            existed_files.append(item['name'])
 
-    def upload(self, file_path: str, likes: str, date: str, url: str):
-        """Метод загружает файлы по списку file_list на яндекс диск"""
+    def upload(self, file_path: str, likes: str, date: str, url: str, size):
+        """Метод загружает файлы по списку existed list на яндекс диск"""
         file_name = f'{likes}.jpg'
         file_name_date = f'{likes}_{date}.jpg'
-        if file_name in exited_files:
+
+        def writing_json(file_name):
+            """Метод записывает имя и размер аватарки в json"""
+            # По непонятным мне причинам запись в json происходит криво.
+            data_for_json = {
+                "file_name": f"{file_name}",
+                "size": f"{size}"
+                }
+
+            # Сериализация json
+            json_object = json.dumps(data_for_json, indent=4)
+
+            # Запись данных, а именно имя файла и размер в json
+            with open("avatars.json", "a+") as outfile:
+                outfile.write(json_object)
+        # Надо бы заняться рефакторингом, но лень
+        if file_name in existed_files:
             params = {'path': f'{file_path}/{file_name_date}', 'url': f'{url}'}
             response = requests.post(self.link_for_upload, params=params,
                                          headers=self.headers)
             if response.status_code == 202:
+                writing_json(file_name_date)
                 print(f'Файл {file_name_date} загружен в папку {file_path}')
             else:
                 return 'Произошла ошибка!', response.status_code
@@ -58,6 +74,7 @@ class YaUploader:
             response = requests.post(self.link_for_upload, params=params,
                                      headers=self.headers)
             if response.status_code == 202:
+                writing_json(file_name)
                 print(f'Файл {file_name} загружен в папку {file_path}')
             else:
                 return 'Произошла ошибка!', response.status_code
