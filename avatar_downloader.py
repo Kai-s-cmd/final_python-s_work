@@ -57,7 +57,8 @@ class VK:
 
             def upload_on_disk():
                 """Загружает фото на яндекс диск"""
-                yandex_disk.upload(fold_name, get_likes(), get_photo())
+                yandex_disk.get_list_files()
+                yandex_disk.upload(fold_name, get_likes(), get_date(), get_photo())
             upload_on_disk()
 
             # def write_download_log():

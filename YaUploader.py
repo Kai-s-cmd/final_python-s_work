@@ -38,19 +38,29 @@ class YaUploader:
         list_of_files = response.json()
         items = list_of_files['items']
         for item in items:
-            item['name'].append(exited_files)
-            return item['name']
+            exited_files.append(item['name'])
 
-    def upload(self, file_path: str, likes: str, url: str):
+    def upload(self, file_path: str, likes: str, date: str, url: str):
         """Метод загружает файлы по списку file_list на яндекс диск"""
         file_name = f'{likes}.jpg'
-        params = {'path': f'{file_path}/{file_name}', 'url': f'{url}'}
-        response = requests.post(self.link_for_upload, params=params,
-                                 headers=self.headers)
-        if response.status_code == 202:
-            print(f'Файл загружен в папку {file_path}')
+        file_name_date = f'{likes}_{date}.jpg'
+        if file_name in exited_files:
+            params = {'path': f'{file_path}/{file_name_date}', 'url': f'{url}'}
+            response = requests.post(self.link_for_upload, params=params,
+                                         headers=self.headers)
+            if response.status_code == 202:
+                print(f'Файл {file_name_date} загружен в папку {file_path}')
+            else:
+                return 'Произошла ошибка!', response.status_code
         else:
-            return 'Произошла ошибка!', response.status_code
+            params = {'path': f'{file_path}/{file_name}',
+                      'url': f'{url}'}
+            response = requests.post(self.link_for_upload, params=params,
+                                     headers=self.headers)
+            if response.status_code == 202:
+                print(f'Файл {file_name} загружен в папку {file_path}')
+            else:
+                return 'Произошла ошибка!', response.status_code
 
 
 token = TOKEN
